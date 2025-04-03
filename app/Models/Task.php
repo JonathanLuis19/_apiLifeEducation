@@ -19,7 +19,7 @@ class Task extends Model
         'video_seconds_start',
         'video_seconds_end',
         'videoFile_url',
-        'imagenFile_url',
+        'imageFile_url',
         'audioFile_url',
         'recursoFile_url',
     ];

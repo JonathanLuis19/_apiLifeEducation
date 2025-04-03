@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Requests\UserRequest;
+use App\Models\Roles;
+use App\Models\RoleUserStudent;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -60,6 +62,7 @@ class UserController extends Controller
             // Crea el usuario con todos los campos
             $user = User::create([
                 'rolee_id' => 1,
+
                 'genre_id' => $request->genre_id,
                 'name' => $request->name,
                 'user' => $request->user,
@@ -167,8 +170,15 @@ class UserController extends Controller
     public function registerTeacher(UserRequest $request)
     {
         try {
+
+            $role = Roles::where('rol', 'teacher')->first();
+
+            if ($role->isEmpty()) {
+                return response()->json(['error' => 'Rol no encontrado'], 404);
+            }
+
             $teacher = User::create([
-                'rolee_id' => 2,
+                'rolee_id' => $role->id,
                 'genre_id' => $request->genre_id,
                 'name' => $request->name,
                 'user' => $request->user,
@@ -180,6 +190,12 @@ class UserController extends Controller
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
 
+            ]);
+
+            // Guardar en role_user_student
+            RoleUserStudent::create([
+                'role_us_id' => $teacher->id,
+                'rol' => $role->rol
             ]);
 
             return response()->json([

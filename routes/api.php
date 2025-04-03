@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\TCourseController;
 use App\Http\Controllers\TSubCourseController;
+use App\Http\Controllers\TTaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -46,4 +47,14 @@ Route::prefix('teacher')->middleware(['auth:sanctum', 'check.role:teacher'])->gr
     //Subcourses 
     Route::get('/list-subcourses/{course_id}', [TSubCourseController::class, 'subCourseByIdCourse']);
     Route::resource('subcourses', TSubCourseController::class)->only(['store', 'show', 'update', 'destroy']);
+
+    //tareas
+    Route::get('/SubCourse-tasks/{id}', [TTaskController::class, 'TasksByIdSubCourse']);
+    Route::post('/tasks', [TTaskController::class, 'store']);
+    Route::get('/tasks/{id}', [TTaskController::class, 'show']);
+    Route::put('/tasks/{id}', [TTaskController::class, 'update']);
+    Route::delete('/tasks/{id}', [TTaskController::class, 'destroy']);
+    //delete questions and answers
+    Route::delete('/delete-questions/{id}', [TTaskController::class, 'destroyQuestion']);
+    Route::delete('/delete-answers/{id}', [TTaskController::class, 'destroyAnswer']);
 });
