@@ -9,11 +9,33 @@ class Student extends Model
     protected $table = 'students';
 
     protected $fillable = [
-        'user_id',
-        'sub_course_id',
-        'status',
-        'score',
-        'attempts',
-        'completed_at',
+        'role_id',
+        'genre_id',
+        'avatar_id',
+        'tutor_id',
+
+
+        'photo_portada',
+        'user',
+        'name',
+        'last_name',
+        'phone',
+        'email',
+        'fecha_nacimiento',
+        'password'
     ];
+
+    protected $hidden = [
+        'password',
+    ];
+
+    public function genre()
+    {
+        return $this->belongsTo(Genre::class, 'genre_id');
+    }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class, 'student_id');
+    }
 }

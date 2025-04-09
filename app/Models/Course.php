@@ -23,4 +23,9 @@ class Course extends Model
     {
         return $this->hasMany(SubCourse::class, 'course_id',);
     }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class, 'curso_id',);
+    }
 }

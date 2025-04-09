@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sub_course_id')->constrained('sub_course', 'id');
+            $table->foreignId('user_id')->constrained('users', 'id'); //docente id
             $table->string('title');
             $table->string('access_code')->nullable();
             $table->dateTime('start_time');

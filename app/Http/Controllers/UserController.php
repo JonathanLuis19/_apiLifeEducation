@@ -173,7 +173,8 @@ class UserController extends Controller
 
             $role = Roles::where('rol', 'teacher')->first();
 
-            if ($role->isEmpty()) {
+
+            if (!$role) {
                 return response()->json(['error' => 'Rol no encontrado'], 404);
             }
 

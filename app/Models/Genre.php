@@ -22,4 +22,9 @@ class Genre extends Model
     {
         return $this->hasMany(User::class, 'genre_id');
     }
+
+    public function students()
+    {
+        return $this->hasMany(Student::class, 'genre_id');
+    }
 }

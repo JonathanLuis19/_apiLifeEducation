@@ -22,10 +22,6 @@ class TSubCourseController extends Controller
                 return response()->json(['message' => 'Curso no encontrado'], 404);
             }
 
-            // Verificar si tiene subcursos
-            if ($course->subCourses->isEmpty()) {
-                return response()->json(['message' => 'El curso no tiene sub-cursos registrados'], 404);
-            }
 
             // Retornar el curso con sus subcursos en una estructura clara
             return response()->json([
@@ -95,6 +91,7 @@ class TSubCourseController extends Controller
                 'description' => $request->description,
                 'duration' => $request->duration,
                 'level' => $request->level,
+                'status' => true
             ]);
 
             return response()->json(
@@ -155,9 +152,14 @@ class TSubCourseController extends Controller
                 'description' => 'nullable|string',
                 'duration' => 'sometimes|integer|min:1',
                 'level' => 'sometimes|string|max:50',
+                'status' => 'sometimes|boolean'
             ]);
 
-            $subCourse->update($request->all());
+
+            $data = $request->all();
+
+            $subCourse->update($data);
+
 
             return response()->json([
                 'message' => 'Dato actualizado correctamente',

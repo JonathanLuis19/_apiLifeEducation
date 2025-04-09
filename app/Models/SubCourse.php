@@ -14,8 +14,10 @@ class SubCourse extends Model
         'name',
         'description',
         'duration',
-        'level'
+        'level',
+        'status'
     ];
+
 
     public function course()
     {
@@ -30,5 +32,15 @@ class SubCourse extends Model
     public function tasks()
     {
         return $this->hasMany(Task::class, 'sub_course_id');
+    }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class, 'subcourse_id');
+    }
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'sub_course_id');
     }
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('role_id')->constrained('roles', 'id');
             $table->foreignId('genre_id')->constrained('genres', 'id');
-            $table->foreignId('avatar_id')->constrained('avatars', 'id');
+            $table->foreignId('avatar_id')->constrained('avatars', 'id')->nullable();
             $table->foreignId('tutor_id')->constrained('tutors', 'id')->nullable();
 
             $table->string('photo_portada')->nullable();

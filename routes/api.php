@@ -3,8 +3,11 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GenreController;
 use App\Http\Controllers\TCourseController;
+use App\Http\Controllers\TPostController;
+use App\Http\Controllers\TStudentController;
 use App\Http\Controllers\TSubCourseController;
 use App\Http\Controllers\TTaskController;
+use App\Http\Controllers\TVideoCallController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -57,4 +60,23 @@ Route::prefix('teacher')->middleware(['auth:sanctum', 'check.role:teacher'])->gr
     //delete questions and answers
     Route::delete('/delete-questions/{id}', [TTaskController::class, 'destroyQuestion']);
     Route::delete('/delete-answers/{id}', [TTaskController::class, 'destroyAnswer']);
+
+    //students apis
+    Route::get('/students-subcourse/{subcourse_id}', [TStudentController::class, 'allStudentsByDId_SubCId']);
+    Route::get('/students', [TStudentController::class, 'allStudentsByDocente']);
+    Route::post('/students', [TStudentController::class, 'store']);
+    Route::get('/students/{id}', [TStudentController::class, 'show']);
+    Route::put('/students/{id}', [TStudentController::class, 'update']);
+    Route::delete('/students/{id}', [TStudentController::class, 'destroy']);
+
+    //video call
+    Route::get('/video-calls/{subcourse_id}/{docente_id}', [TVideoCallController::class, 'indexVideoCall']);
+    Route::post('/video-call', [TVideoCallController::class, 'store']);
+    Route::get('/video-call/{id}', [TVideoCallController::class, 'show']);
+    Route::put('/video-call/{id}', [TVideoCallController::class, 'update']);
+    Route::delete('/video-call/{id}', [TVideoCallController::class, 'destroy']);
+
+    //posts
+    Route::get('/posts/{curso_id}', [TPostController::class, 'indexPosts']);
+    Route::post('/posts', [TPostController::class, 'store']);
 });

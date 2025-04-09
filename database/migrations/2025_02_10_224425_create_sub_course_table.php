@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('duration');
             $table->string('level');
+            $table->boolean('status');
             $table->timestamps();
         });
     }
