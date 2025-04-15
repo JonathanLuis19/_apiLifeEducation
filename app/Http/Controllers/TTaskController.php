@@ -198,14 +198,14 @@ class TTaskController extends Controller
             // Buscar la tarea
             $tarea = Task::findOrFail($id);
 
-            // Validar solo los campos que se envían en la solicitud
+            // Validación de los datos entrantes
             $validatedData = $request->validate([
                 'sub_course_id' => 'sometimes|exists:sub_courses,id',
                 'name' => 'sometimes|string',
                 'instrucciones' => 'sometimes|string|max:255',
                 'texto' => 'sometimes|nullable|string',
                 'intentos' => 'sometimes|integer|min:1',
-                'fecha_limite' => 'sometimes|date',
+                'fecha_limite' => 'sometimes|date_format:Y-m-d H:i',
                 'url_video' => 'sometimes|nullable|url',
                 'video_seconds_start' => 'sometimes|nullable|integer|min:0',
                 'video_seconds_end' => 'sometimes|nullable|integer|min:0',
@@ -216,48 +216,54 @@ class TTaskController extends Controller
                 'questions' => 'sometimes|array',
             ]);
 
-            // Manejo de archivos solo si se envían
-            if ($request->hasFile('audioFile_url')) {
-                $validatedData['audioFile_url'] = $request->file('audioFile_url')->store('audios', 'public');
-            }
-            if ($request->hasFile('videoFile_url')) {
-                $validatedData['videoFile_url'] = $request->file('videoFile_url')->store('videos', 'public');
-            }
-            if ($request->hasFile('imagenFile_url')) {
-                $validatedData['imagenFile_url'] = $request->file('imagenFile_url')->store('images', 'public');
-            }
-            if ($request->hasFile('recursoFile_url')) {
-                $validatedData['recursoFile_url'] = $request->file('recursoFile_url')->store('resources', 'public');
+            // Manejo de archivos si están presentes
+            $files = [
+                'audioFile_url' => ['folder' => 'audios', 'disk' => 'public'],
+                'videoFile_url' => ['folder' => 'videos', 'disk' => 'public'],
+                'imagenFile_url' => ['folder' => 'images', 'disk' => 'public'],
+                'recursoFile_url' => ['folder' => 'resources', 'disk' => 'public'],
+            ];
+
+            foreach ($files as $field => $config) {
+                if ($request->hasFile($field)) {
+                    $validatedData[$field] = $request->file($field)->store($config['folder'], $config['disk']);
+                }
             }
 
-            // Si se envía la fecha, formatearla correctamente
-            if ($request->has('fecha_limite')) {
+            // Formateo de fecha si se envía
+            if (isset($validatedData['fecha_limite'])) {
                 $validatedData['fecha_limite'] = Carbon::createFromFormat('Y-m-d H:i', $validatedData['fecha_limite']);
             }
 
-            // Actualizar solo los campos proporcionados
+            // Actualizar la tarea con los campos validados
             $tarea->update($validatedData);
 
-            // Si se envían preguntas, actualizar
+            // Si vienen preguntas nuevas, eliminamos las anteriores y las reemplazamos
             if ($request->has('questions')) {
-                $tarea->questions()->delete();
+                // Eliminar preguntas existentes y sus opciones
+                $tarea->questions()->each(function ($question) {
+                    $question->options()->delete();
+                    $question->delete();
+                });
 
+                // Agregar nuevas preguntas
                 foreach ($request->questions as $q) {
                     $question = $tarea->questions()->create([
                         'texto_pregunta' => $q['texto_pregunta'],
                         'tipo_pregunta' => $q['tipo_pregunta'] ?? 'multiple_choice_single',
                     ]);
 
-                    if (in_array($q['tipo_pregunta'], ['multiple_choice_single', 'multiple_choice_multiple']) && isset($q['options'])) {
-                        foreach ($q['options'] as $optionIndex => $option) {
-                            $isCorrect = in_array($optionIndex + 1, $q['correct'] ?? []);
+                    // Agregar opciones según el tipo
+                    if (in_array($question->tipo_pregunta, ['multiple_choice_single', 'multiple_choice_multiple']) && isset($q['options'])) {
+                        foreach ($q['options'] as $index => $optionText) {
+                            $isCorrect = in_array($index + 1, $q['correct'] ?? []);
                             $question->options()->create([
-                                'texto_respuesta' => $option,
+                                'texto_respuesta' => $optionText,
                                 'is_correct' => $isCorrect,
-                                'orden_respuesta' => $optionIndex + 1,
+                                'orden_respuesta' => $index + 1,
                             ]);
                         }
-                    } elseif ($q['tipo_pregunta'] === 'text_input') {
+                    } elseif ($question->tipo_pregunta === 'text_input' && isset($q['respuesta_esperada'])) {
                         $question->options()->create([
                             'texto_respuesta' => $q['respuesta_esperada'],
                             'is_correct' => true,
@@ -267,10 +273,11 @@ class TTaskController extends Controller
                 }
             }
 
+            // Devolver respuesta exitosa
             return response()->json([
                 'success' => true,
                 'message' => 'Tarea actualizada con éxito',
-                'data' => $tarea->load('questions.options')
+                'data' => $tarea->load('questions.options'),
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([
@@ -286,6 +293,7 @@ class TTaskController extends Controller
             ], 500);
         }
     }
+
 
 
     public function destroy(string $id)
