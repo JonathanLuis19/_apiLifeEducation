@@ -98,7 +98,7 @@ class TStudentController extends Controller
                 'last_name' => 'required|string|max:255',
                 'phone' => 'nullable|string|max:15',
                 'email' => 'required|email|unique:students,email',
-                'fecha_nacimiento' => 'required|date',
+                'fecha_nacimiento' => 'nullable|date',
                 'password' => 'required|string|min:6',
                 'subcourse_id' => 'required|integer|exists:sub_course,id',
             ]);
