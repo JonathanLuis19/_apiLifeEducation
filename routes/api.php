@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\SVirtualClassroomController;
 use App\Http\Controllers\TCourseController;
 use App\Http\Controllers\TPostController;
 use App\Http\Controllers\TStudentController;
@@ -79,4 +80,23 @@ Route::prefix('teacher')->middleware(['auth:sanctum', 'check.role:teacher'])->gr
     //posts
     Route::get('/posts/{curso_id}', [TPostController::class, 'indexPosts']);
     Route::post('/posts', [TPostController::class, 'store']);
+});
+
+
+
+
+//Student
+Route::prefix('auth-student')->group(function () {
+    Route::post('/login', [AuthController::class, 'loginStudent']);
+});
+
+
+Route::prefix('student')->middleware(['auth:sanctum', 'check.student.role:student'])->group(function () {
+    // Aquí puedes añadir rutas específicas para docentes
+    Route::get('/student', [AuthController::class, 'getStudent']);
+    Route::get('/subcourses', [SVirtualClassroomController::class, 'getSubCoursesStudent']);
+    Route::get('/subcourses-tasks/{id}', [SVirtualClassroomController::class, 'getTasksBySubCourse']);
+    Route::get('/tasks/{id}', [SVirtualClassroomController::class, 'getTasksById']);
+    Route::get('/subcourses-meeting/{id}', [SVirtualClassroomController::class, 'getMeetingsBySubCourse']);
+    Route::get('/meeting/{id}', [TPostController::class, 'getMeetingById']);
 });

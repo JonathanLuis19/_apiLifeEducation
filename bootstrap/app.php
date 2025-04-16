@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'check.role' => \App\Http\Middleware\CheckRole::class,
+            // Middleware para verificar roles de estudiantes (tabla 'students')
+            'check.student.role' => \App\Http\Middleware\CheckStudentRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

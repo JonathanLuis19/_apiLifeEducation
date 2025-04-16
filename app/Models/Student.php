@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Notifications\Notifiable;
 
 class Student extends Model
 {
+    use HasApiTokens, Notifiable;
     protected $table = 'students';
 
     protected $fillable = [
@@ -28,6 +31,11 @@ class Student extends Model
     protected $hidden = [
         'password',
     ];
+
+    public function role()
+    {
+        return $this->belongsTo(Roles::class, 'role_id');
+    }
 
     public function genre()
     {

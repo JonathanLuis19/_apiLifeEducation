@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -68,6 +69,54 @@ class AuthController extends Controller
         } catch (\Throwable $th) {
             // Manejo de excepciones
             return response()->json(['error' => 'Error al obtener el usuario: ' . $th->getMessage()], 500);
+        }
+    }
+
+
+    public function loginStudent(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json($validator->errors(), 422);
+        }
+
+        $student = Student::where('email', $request->email)->first();
+
+        if (!$student || !Hash::check($request->password, $student->password)) {
+            return response()->json(['message' => 'Credenciales inválidas.'], 401);
+        }
+
+        if ($student->role_id === 3) {
+            // student
+            $token = $student->createToken('admin-token')->plainTextToken;
+            return response()->json(['token' => $token, 'role' => 'student']);
+        }
+        return response()->json(['message' => 'Rol no reconocido.'], 403);
+    }
+
+    public function getStudent(Request $request)
+    {
+        try {
+            // Verifica si hay token
+            if (!$request->hasHeader('Authorization')) {
+                return response()->json(['error' => 'Token no proporcionado'], 401);
+            }
+
+            // Obtener el estudiante usando la guardia 'student'
+            $student = auth('student')->user();
+
+            if (!$student) {
+                return response()->json(['error' => 'Token inválido o no corresponde a un estudiante'], 401);
+            }
+
+
+            return response()->json($student);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => 'Error al obtener el estudiante: ' . $th->getMessage()], 500);
         }
     }
 }
