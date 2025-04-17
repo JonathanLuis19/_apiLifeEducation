@@ -25,7 +25,7 @@ class SVirtualClassroomController extends Controller
             // Consulta los subcursos a través de las inscripciones activas
             $subcourses = $student->enrollments()
                 ->where('active', true)
-                ->with('subCourse')
+                ->with('subCourse.course')
                 ->get()
                 ->pluck('subCourse')
                 ->filter(); // filtra nulos si hubiera alguno
@@ -93,7 +93,7 @@ class SVirtualClassroomController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Tareas obtenidas correctamente.',
-                'data' => $subcourse->tasks,
+                'data' => $subcourse,
             ]);
         } catch (\Throwable $e) {
             return response()->json([
