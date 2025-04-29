@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\Participant;
 use App\Models\RoleUserStudent;
+use App\Models\Student;
 use App\Models\SubCourse;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class TVideoCallController extends Controller
@@ -135,9 +137,34 @@ class TVideoCallController extends Controller
     public function show($id)
     {
         try {
+            // 1. Cargar reunión con sus participantes y la relación urole (studentsTeacher)
             $appointment = Appointment::with([
-                'participants.studentsTeacher', // Muestra el urole y su relación
+                'participants.studentsTeacher',
             ])->findOrFail($id);
+
+            // 2. Mapear autores (estudiante o docente según rol)
+            $appointment->participants->transform(function ($participant) {
+                $urole = $participant->studentsTeacher;
+
+                if (!$urole) {
+                    $participant->author = null;
+                    return $participant;
+                }
+
+                // Buscar al autor según el rol
+                if ($urole->rol === 'student') {
+                    $author = Student::find($urole->role_us_id);
+                } elseif ($urole->rol === 'teacher') {
+                    $author = User::find($urole->role_us_id);
+                } else {
+                    $author = null;
+                }
+
+                // Adjuntar el autor como propiedad adicional
+                $participant->author = $author;
+
+                return $participant;
+            });
 
             return response()->json([
                 'status' => true,
@@ -156,6 +183,7 @@ class TVideoCallController extends Controller
             ], 500);
         }
     }
+
 
     public function update(Request $request, $id)
     {
@@ -301,6 +329,47 @@ class TVideoCallController extends Controller
             return response()->json([
                 'status' => false,
                 'message' => 'Error al eliminar el participante',
+                'error' => $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function setActivationDesactivationParticipants($role_us_id, $rol)
+    {
+        try {
+            $identifidor = RoleUserStudent::where('role_us_id', $role_us_id)
+                ->where('rol', $rol)
+                ->first();
+
+            if (!$identifidor) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Participante no encontrado (role_us_id y rol inválidos)'
+                ], 404);
+            }
+
+            $participant = Participant::where('urole_id', $identifidor->id)->first();
+
+            if (!$participant) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Participante no encontrado'
+                ], 404);
+            }
+
+            // Invertir el estado actual
+            $participant->is_connected = !$participant->is_connected;
+            $participant->save();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Estado de conexión actualizado exitosamente',
+                'data' => $participant
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Error al actualizar el estado del participante',
                 'error' => $th->getMessage()
             ], 500);
         }

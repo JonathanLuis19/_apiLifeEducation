@@ -21,10 +21,12 @@ return new class extends Migration
             $table->string('photo_portada')->nullable();
             $table->string('user')->unique();
             $table->string('name');
+            $table->string('n_identidad')->nullable();
             $table->string('last_name');
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
             $table->string('fecha_nacimiento')->nullable();
+            $table->string('language')->nullable();
             $table->string('password');
             $table->timestamps();
         });

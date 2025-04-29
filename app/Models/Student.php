@@ -20,11 +20,13 @@ class Student extends Model
 
         'photo_portada',
         'user',
+        'n_identidad',
         'name',
         'last_name',
         'phone',
         'email',
         'fecha_nacimiento',
+        'language',
         'password'
     ];
 

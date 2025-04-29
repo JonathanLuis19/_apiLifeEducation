@@ -8,6 +8,7 @@ use App\Models\RoleUserStudent;
 use App\Models\Student;
 use App\Models\SubCourse;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -43,9 +44,14 @@ class TStudentController extends Controller
             $students = Enrollment::where('subcourse_id', $subcourse->id)
                 ->with('student') // Relación con el modelo Student
                 ->get()
-                ->pluck('student');
+                ->pluck('student')
+                ->map(function ($student) {
+                    // Calcular la edad usando la fecha de nacimiento
+                    $student->age = Carbon::parse($student->fecha_nacimiento)->age;
+                    return $student;
+                });
 
-            // Respuesta con el nombre del subcurso y los estudiantes (o un array vacío si no hay)
+            // Respuesta con el nombre del subcurso y los estudiantes (y sus edades)
             return response()->json([
                 'subcourse_name' => $subcourse->name,
                 'students' => $students
@@ -59,12 +65,12 @@ class TStudentController extends Controller
     }
 
 
-
     public function allStudentsByDocente()
     {
         try {
             // Buscar al docente
             $userId = Auth::id();
+
             // Obtener los subcursos que tiene asignados
             $subcourses = SubCourse::where('docente_id', $userId)->pluck('id');
 
@@ -74,13 +80,19 @@ class TStudentController extends Controller
                 ->get()
                 ->pluck('student')
                 ->unique() // Para evitar duplicados si un estudiante está en varios subcursos
-                ->values(); // Reindexar el array
+                ->values() // Reindexar el array
+                ->map(function ($student) {
+                    // Calcular la edad usando la fecha de nacimiento
+                    $student->age = Carbon::parse($student->fecha_nacimiento)->age;
+                    return $student;
+                });
 
             return response()->json($students, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Error al obtener los estudiantes: ' . $e->getMessage()], 500);
         }
     }
+
 
 
     //Operaciones basicas de CRUD para los estudiantes
@@ -95,10 +107,12 @@ class TStudentController extends Controller
                 'photo_portada' => 'nullable|string',
                 'user' => 'required|string|unique:students,user',
                 'name' => 'required|string|max:255',
+                'n_identidad' => 'nullable|string|max:50',
                 'last_name' => 'required|string|max:255',
                 'phone' => 'nullable|string|max:15',
                 'email' => 'required|email|unique:students,email',
                 'fecha_nacimiento' => 'nullable|date',
+                'language' => 'nullable|string|max:50',
                 'password' => 'required|string|min:6',
                 'subcourse_id' => 'required|integer|exists:sub_course,id',
             ]);
@@ -116,11 +130,13 @@ class TStudentController extends Controller
                 'tutor_id' => $request->tutor_id,
                 'photo_portada' => $request->photo_portada,
                 'user' => $request->user,
+                'n_identidad' => $request->n_identidad,
                 'name' => $request->name,
                 'last_name' => $request->last_name,
                 'phone' => $request->phone,
                 'email' => $request->email,
                 'fecha_nacimiento' => $request->fecha_nacimiento,
+                'language' => $request->language,
                 'password' => Hash::make($request->password),
             ]);
 
@@ -195,10 +211,12 @@ class TStudentController extends Controller
                 'photo_portada' => 'nullable|string',
                 'user' => 'sometimes|string|unique:students,user,' . $id,
                 'name' => 'sometimes|string|max:255',
+                'n_identidad' => 'nullable|string|max:50',
                 'last_name' => 'sometimes|string|max:255',
                 'phone' => 'nullable|string|max:15',
                 'email' => 'sometimes|email|unique:students,email,' . $id,
                 'fecha_nacimiento' => 'sometimes|date',
+                'language' => 'nullable|string|max:50',
                 'password' => 'nullable|string|min:6',
                 'active' => 'sometimes|boolean', // Permitir actualizar el estado
             ]);
@@ -211,10 +229,12 @@ class TStudentController extends Controller
                 'photo_portada',
                 'user',
                 'name',
+                'n_identidad',
                 'last_name',
                 'phone',
                 'email',
                 'fecha_nacimiento',
+                'language',
                 'active'
             ]);
 

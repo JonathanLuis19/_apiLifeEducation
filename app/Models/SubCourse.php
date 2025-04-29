@@ -12,6 +12,7 @@ class SubCourse extends Model
         'course_id',
         'docente_id',
         'name',
+        'fecha_inicio',
         'description',
         'duration',
         'level',
@@ -42,5 +43,11 @@ class SubCourse extends Model
     public function appointments()
     {
         return $this->hasMany(Appointment::class, 'sub_course_id');
+    }
+
+
+    public function getTotalStudentsAttribute()
+    {
+        return $this->enrollments()->distinct('student_id')->count('student_id');
     }
 }

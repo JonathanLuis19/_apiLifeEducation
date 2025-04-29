@@ -22,4 +22,15 @@ class RoleUserStudent extends Model
     {
         return $this->hasMany(Post::class, 'urole_id');
     }
+
+    public function getPersonaAttribute()
+    {
+        if ($this->rol === 'student') {
+            return \App\Models\Student::find($this->role_us_id);
+        } elseif ($this->rol === 'teacher') {
+            return \App\Models\User::find($this->role_us_id);
+        }
+
+        return null;
+    }
 }

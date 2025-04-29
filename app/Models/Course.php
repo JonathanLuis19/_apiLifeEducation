@@ -28,4 +28,15 @@ class Course extends Model
     {
         return $this->hasMany(Post::class, 'curso_id',);
     }
+
+    // En Course.php
+
+    public function getTotalStudentsAttribute()
+    {
+        // Obtener todos los subcursos del curso
+        $subcourseIds = $this->subCourses()->pluck('id');
+
+        // Contar los estudiantes inscritos en esos subcursos
+        return Enrollment::whereIn('subcourse_id', $subcourseIds)->distinct('student_id')->count('student_id');
+    }
 }

@@ -76,6 +76,8 @@ Route::prefix('teacher')->middleware(['auth:sanctum', 'check.role:teacher'])->gr
     Route::get('/video-call/{id}', [TVideoCallController::class, 'show']);
     Route::put('/video-call/{id}', [TVideoCallController::class, 'update']);
     Route::delete('/video-call/{id}', [TVideoCallController::class, 'destroy']);
+    Route::patch('/participants/{role_us_id}/{rol}/toggle-connection', [TVideoCallController::class, 'setActivationDesactivationParticipants']);
+
 
     //posts
     Route::get('/posts/{curso_id}', [TPostController::class, 'indexPosts']);
@@ -98,5 +100,6 @@ Route::prefix('student')->middleware(['auth:sanctum', 'check.student.role:studen
     Route::get('/subcourses-tasks/{id}', [SVirtualClassroomController::class, 'getTasksBySubCourse']);
     Route::get('/tasks/{id}', [SVirtualClassroomController::class, 'getTasksById']);
     Route::get('/subcourses-meeting/{id}', [SVirtualClassroomController::class, 'getMeetingsBySubCourse']);
-    Route::get('/meeting/{id}', [TPostController::class, 'getMeetingById']);
+    Route::get('/meeting/{id}', [SVirtualClassroomController::class, 'getMeetingById']);
+    Route::patch('/participants/{role_us_id}/{rol}/toggle-connection', [TVideoCallController::class, 'setActivationDesactivationParticipants']);
 });

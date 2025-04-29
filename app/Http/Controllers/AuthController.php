@@ -62,7 +62,8 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Token inválido'], 401);
             }
 
-            $user = $request->user()->load('genre');
+            $user = $request->user()->load(['genre', 'role']);
+
 
             // Devuelve la información del usuario autenticado
             return response()->json($user);

@@ -15,28 +15,47 @@ class TCourseController extends Controller
     public function index()
     {
         try {
-            $userId = Auth::id(); // Obtiene el ID del usuario autenticado
+            $userId = Auth::id();
 
             $courses = Course::with(['docente', 'subCourses'])
-                ->where('docente_id', $userId) // Filtra por el docente autenticado
-                ->get();
+                ->where('docente_id', $userId)
+                ->get()
+                ->map(function ($course) {
+                    return [
+                        'id' => $course->id,
+                        'name' => $course->name,
+                        'description' => $course->description,
+                        'status' => $course->status,
+                        'docente' => $course->docente,
+                        'subCourses' => $course->subCourses,
+                        'total_students' => $course->total_students, // usando el accessor
+                    ];
+                });
 
             if ($courses->isEmpty()) {
                 return response()->json([
-                    'message' => 'No tienes cursos asignados'
-                ], 200); // Envía un 200 OK con el mensaje
+                    'status' => true,
+                    'message' => 'No tienes cursos asignados',
+                    'data' => []
+                ], 200);
             }
 
-            return response()->json($courses, 200);
+            return response()->json([
+                'status' => true,
+                'message' => 'Lista de cursos asignados',
+                'data' => $courses
+            ], 200);
         } catch (\Illuminate\Database\QueryException $e) {
             return response()->json([
-                'error' => 'Error en la consulta a la base de datos',
-                'message' => $e->getMessage()
+                'status' => false,
+                'message' => 'Error en la consulta a la base de datos',
+                'error' => $e->getMessage()
             ], 500);
         } catch (\Throwable $th) {
             return response()->json([
-                'error' => 'Error al obtener los cursos',
-                'message' => $th->getMessage()
+                'status' => false,
+                'message' => 'Error al obtener los cursos',
+                'error' => $th->getMessage()
             ], 500);
         }
     }
